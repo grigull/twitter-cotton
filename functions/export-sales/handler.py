@@ -24,13 +24,18 @@ class ExportSales:
         self.API = None
         self.profile_name = profile
 
+
     def get_secret(self):
         session = boto3.session.Session(profile_name=self.profile_name)
-        client = session.client(
-            service_name='secretsmanager', region_name='us-east-1')
-        secret = client.get_secret_value(SecretId="twitter")["SecretString"]
-        secret = json.loads(secret)
-        return secret
+        client = session.client(service_name='ssm')
+        secret = client.get_parameter(Name='twitter-cotton')
+        s = secret['Parameter']['Value'].split(',')
+        result = {'consumer_key': s[0],
+                  'consumer_secret': s[1],
+                  'access_token': s[2],
+                  'access_secret': s[3]}
+        return result
+
 
     def login_twitter(self):
         secrets = self.get_secret()
@@ -40,8 +45,9 @@ class ExportSales:
             secrets['access_token'], secrets['access_secret'])
         self.API = tp.API(auth)
 
+
     def get_last_date(self):
-        # Given the list of recent tweets find the most recent date for the Export Sales tweet
+        # Given the list of the 20 most recent tweets
         tweets = self.API.user_timeline()
         last_date = dt.date(2000, 1, 1)
         for t in tweets:
@@ -54,6 +60,7 @@ class ExportSales:
 
         return last_date
 
+
     @staticmethod
     def largest_df(dfs):
         # Returns largest df in a list of dfs
@@ -63,12 +70,14 @@ class ExportSales:
             return dfs[largest]
         return dfs
 
+
     def load_df(self, url):
         # Load the table into a df
         tables = pd.read_html(url, header=0)
         # get the largest df
         df_temp = self.largest_df(tables)
         return df_temp
+
 
     @staticmethod
     def get_report_date(df):
@@ -82,6 +91,7 @@ class ExportSales:
         date = dt.datetime(year=numbers[2],
                            month=numbers[0], day=numbers[1]).date()
         return date
+
 
     @staticmethod
     def clean(df):
@@ -100,6 +110,7 @@ class ExportSales:
         df = df.set_index('country')
         return df
 
+
     @staticmethod
     def get_intersection(df, row, col):
         # Finds the intersection value of the col row values and converts the number from 9.6 to 9,600
@@ -111,6 +122,7 @@ class ExportSales:
         value = int(float(values) * 1000)
         return '{:,}'.format(value)
 
+
     def get_export_text(self, df, date):
         # Writes out the text which will be tweeted.
         week_text = dt.datetime.strftime(date, '%m/%d/%y')
@@ -120,11 +132,13 @@ class ExportSales:
         tweet = f'U.S. EXPORT SALES {week_text}\nExports: {exports}\nNew Sales: {sales}\nCancels: {cancel}\n{URL}\n#cotton'
         return tweet
 
+
     @staticmethod
     def is_dst():
         tz = pytz.timezone('US/Eastern')
         now = pytz.utc.localize(dt.datetime.utcnow())
         return now.astimezone(tz).dst() != dt.timedelta(0)
+
 
     def run(self):
         is_dst = self.is_dst()
