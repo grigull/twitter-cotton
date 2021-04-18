@@ -22,7 +22,7 @@ setuptools.setup(
         "aws-cdk.core==1.98.0",
     ],
 
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 
     classifiers=[
         "Development Status :: 4 - Beta",

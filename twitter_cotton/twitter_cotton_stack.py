@@ -18,11 +18,11 @@ class TwitterCottonStack(core.Stack):
         ))
 
         export_sales = aws_lambda.Function(self, "export-sales",
-                                           runtime=aws_lambda.Runtime.PYTHON_3_7,
+                                           runtime=aws_lambda.Runtime.PYTHON_3_8,
                                            handler="handler.main",
                                            code=aws_lambda.AssetCode(
                                                "./functions/export-sales"),
-                                           timeout=core.Duration.seconds(20),
+                                           timeout=core.Duration.seconds(15),
                                            log_retention=aws_logs.RetentionDays.ONE_MONTH,
                                            layers=[self.create_dependencies_layer(
                                                id, "export-sales")],
