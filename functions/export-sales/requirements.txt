@@ -2,7 +2,7 @@
 # Date: Sat Apr 17 20:00:27 CDT 2021
 boto3==1.17.53
 botocore==1.20.53
-certifi==2020.12.5
+certifi==2022.12.7
 chardet==4.0.0
 idna==2.10
 jmespath==0.10.0
